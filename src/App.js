@@ -1,83 +1,65 @@
-import React, { useState } from 'react';
-import './App.css';
-import Counter from './Counter';
-import AddCounterForm from './AddCounterForm';
+import format from "date-fns/format";
+import getDay from "date-fns/getDay";
+import parse from "date-fns/parse";
+import startOfWeek from "date-fns/startOfWeek";
+import React, { useState } from "react";
+import { Calendar, dateFnsLocalizer } from "react-big-calendar";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "./App.css";
+
+const locales = {
+    "en-US": require("date-fns/locale/en-US"),
+};
+const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek,
+    getDay,
+    locales,
+});
+
+const events = [
+    {
+        title: "Big Meeting",
+        allDay: true,
+        start: new Date(2021, 6, 0),
+        end: new Date(2021, 6, 0),
+    },
+    {
+        title: "Vacation",
+        start: new Date(2021, 6, 7),
+        end: new Date(2021, 6, 10),
+    },
+    {
+        title: "Conference",
+        start: new Date(2021, 6, 20),
+        end: new Date(2021, 6, 23),
+    },
+];
 
 function App() {
+    const [newEvent, setNewEvent] = useState({ title: "", start: "", end: "" });
+    const [allEvents, setAllEvents] = useState(events);
 
-    const InitialCountersState = [
-        { id: 123, name: 'Counter 1', count: 2 },
-        { id: 234, name: 'Counter 2', count: 5 },
-        { id: 345, name: 'Counter 3', count: 8 },
-        { id: 456, name: 'Counter 4', count: 48 },
-    ];
-
-    const [counters, setCounters] = useState(InitialCountersState);
-
-    const resetTotalCount = () => {
-
-        console.log('resetTotalCount');
-        const newCounters = counters.map(el => ({ ...el, count: 0 }));
-        setCounters(newCounters);
-    };
-
-    const incrementCounter = (id) => {
-        console.log('INC ' + id);
-        const index = counters.findIndex(el => el.id === id);
-        const newCounters = [...counters];
-        newCounters[index].count = newCounters[index].count + 1;
-        setCounters(newCounters);
-    };
-
-    const decrementCounter = (id) => {
-        console.log('DECR ' + id);
-        const newCounters = counters.map(el => {
-            if (el.id === id) return { ...el, count: el.count - 1 };
-            return el;
-        });
-        setCounters(newCounters);
-    };
-
-    const removeCounter = (id) => {
-        const newCounters = counters.filter(el => el.id !== id);
-        setCounters(newCounters);
-    };
-
-    const addCounter = (name, count) => {
-        const newCounters = [...counters, {
-            id: Math.random(),
-            name,
-            count: count
-        }];
-        setCounters(newCounters);
-    };
-
+    function handleAddEvent() {
+        setAllEvents([...allEvents, newEvent]);
+    }
 
     return (
-        <div>
-            <h1>Counters</h1>
-
-            Total {counters.reduce((acc, cur) => acc + cur.count, 0)}
-            <button onClick={resetTotalCount}>Reset total count</button>
-
-            <hr />
-
-            {
-                counters.map(el => <Counter key={el.id}
-                                            id={el.id}
-                                            name={el.name}
-                                            count={el.count}
-                                            increment={incrementCounter}
-                                            decrement={decrementCounter}
-                                            remove={removeCounter}
-                />)
-            }
-
-
-            <hr />
-
-            <AddCounterForm onSubmit={addCounter} />
-
+        <div className="App">
+            <h1>Calendar</h1>
+            <h2>Add New Event</h2>
+            <div>
+                <input type="text" placeholder="Add Title" style={{ width: "20%", marginRight: "10px" }} value={newEvent.title} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} />
+                <DatePicker placeholderText="Start Date" style={{ marginRight: "10px" }} selected={newEvent.start} onChange={(start) => setNewEvent({ ...newEvent, start })} />
+                <DatePicker placeholderText="End Date" selected={newEvent.end} onChange={(end) => setNewEvent({ ...newEvent, end })} />
+                <button stlye={{ marginTop: "10px" }} onClick={handleAddEvent}>
+                    Add Event
+                </button>
+            </div>
+            <Calendar localizer={localizer} events={allEvents} startAccessor="start" endAccessor="end" style={{ height: 500, margin: "50px" }} />
         </div>
     );
 }
